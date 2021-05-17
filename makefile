@@ -1,10 +1,10 @@
 CFLAGS=
 fastblur: obj/fastblur.o
-	gcc $(CFLAGS) obj/fastblur.o -o fastblur -lm
+	nvcc $(CFLAGS) obj/fastblur.o -o fastblur -lm
 
 
-obj/fastblur.o: fastblur.c
-	gcc -c $(CFLAGS) fastblur.c -o obj/fastblur.o 
+obj/fastblur.o: fastblur.cu
+	nvcc -c $(CFLAGS) fastblur.cu -o obj/fastblur.o 
 
 
 clean:
