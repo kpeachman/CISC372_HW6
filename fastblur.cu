@@ -11,6 +11,8 @@
 
 __global__ void computeColumn(uint8_t* src,float* dest,int col,int pWidth,int height,int radius,int bpp){
     int i;
+    int index = blockIdx.x * blockDim.x + threadIdx.x;
+    int stride = blockDim.x * gridDim.x;
     //initialize the first element of each column
     dest[col]=src[col];
     //start tue sum up to radius*2 by only adding
@@ -28,6 +30,11 @@ __global__ void computeColumn(uint8_t* src,float* dest,int col,int pWidth,int he
         dest[(height-1)*pWidth-i*pWidth+col]=0;
     }
 
+}
+
+int Usage(char* name){
+    printf("%s: <filename> <blur radius>\n\tblur radius=pixels to average on any side of the current pixel\n",name);
+    return -1;
 }
 
 
@@ -49,7 +56,22 @@ int main(int argc,char** argv){
 
     pWidth=width*bpp;  //actual width in bytes of an image row
 
-    cudaMalloc(mid, sizeof(float)*pWidth*height);   
-    cudaMalloc(dest, sizeof(float)*pWidth*height);   
+    //allocate memory for images
+    cudaMallocManaged(mid, sizeof(float)*pWidth*height);   
+    cudaMallocManaged(dest, sizeof(float)*pWidth*height);
+    
+    t1=time(NULL);
+
+    computeColumn<<<1,1>>>(img,mid,i,pWidth,height,radius,bpp);
+  
+    stbi_image_free(img); //done with image
+
+    computeRow<<<1,1>>>(mid,dest,i,pWidth,radius,bpp);
+    
+    t2=time(NULL);
+    free(mid); //done with mid
+
+
+
 
 }
