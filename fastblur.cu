@@ -9,10 +9,9 @@
 #include "stb_image_write.h"
 
 
-__global__ void computeColumn(uint8_t* src,float* dest,int col,int pWidth,int height,int radius,int bpp){
+__global__ void computeColumn(uint8_t* src,float* dest,int pWidth,int height,int radius,int bpp){
     int i;
-    int index = blockIdx.x * blockDim.x + threadIdx.x;
-    int stride = blockDim.x * gridDim.x;
+    int col = blockIdx.x * blockDim.x + threadIdx.x;
     //initialize the first element of each column
     dest[col]=src[col];
     //start tue sum up to radius*2 by only adding
@@ -32,6 +31,28 @@ __global__ void computeColumn(uint8_t* src,float* dest,int col,int pWidth,int he
 
 }
 
+void computeRow(float* src,float* dest,int pWidth,int radius,int bpp){
+    int i;
+    int bradius=radius*bpp;
+    //initialize the first bpp elements so that nothing fails
+    for (i=0;i<bpp;i++)
+        dest[row*pWidth+i]=src[row*pWidth+i];
+    //start the sum up to radius*2 by only adding (nothing to subtract yet)
+    for (i=bpp;i<bradius*2*bpp;i++)
+        dest[row*pWidth+i]=src[row*pWidth+i]+dest[row*pWidth+i-bpp];
+     for (i=bradius*2+bpp;i<pWidth;i++)
+        dest[row*pWidth+i]=src[row*pWidth+i]+dest[row*pWidth+i-bpp]-src[row*pWidth+i-2*bradius-bpp];
+    //now shift everything over by radius spaces and blank out the last radius items to account for sums at the end of the kernel, instead of the middle
+    for (i=bradius;i<pWidth;i++){
+        dest[row*pWidth+i-bradius]=dest[row*pWidth+i]/(radius*2+1);
+    }
+    //now the first and last radius values make no sense, so blank them out
+    for (i=0;i<bradius;i++){
+        dest[row*pWidth+i]=0;
+        dest[(row+1)*pWidth-1-i]=0;
+    }
+}
+
 int Usage(char* name){
     printf("%s: <filename> <blur radius>\n\tblur radius=pixels to average on any side of the current pixel\n",name);
     return -1;
@@ -41,7 +62,6 @@ int Usage(char* name){
 int main(int argc,char** argv){
     long t1,t2;
     int radius=0;
-    int i;
     int width,height,bpp,pWidth;
     char* filename;
     uint8_t *img;
@@ -62,11 +82,11 @@ int main(int argc,char** argv){
     
     t1=time(NULL);
 
-    computeColumn<<<1,1>>>(img,mid,i,pWidth,height,radius,bpp);
+    computeColumn<<<1,1>>>(img,mid,pWidth,height,radius,bpp);
   
     stbi_image_free(img); //done with image
 
-    computeRow<<<1,1>>>(mid,dest,i,pWidth,radius,bpp);
+    computeRow<<<1,1>>>(mid,dest,pWidth,radius,bpp);
     
     t2=time(NULL);
     free(mid); //done with mid
