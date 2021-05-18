@@ -98,7 +98,14 @@ int main(int argc,char** argv){
     t2=time(NULL);
     cudaFree(mid); //done with mid
 
-
-
+     //now back to int8 so we can save it
+     img=malloc(sizeof(uint8_t)*pWidth*height);
+     for (i=0;i<pWidth*height;i++){
+         img[i]=(uint8_t)dest[i];
+     }
+     free(dest);   
+     stbi_write_png("output.png",width,height,bpp,img,bpp*width);
+     free(img);
+     printf("Blur with radius %d complete in %ld seconds\n",radius,t2-t1);
 
 }
