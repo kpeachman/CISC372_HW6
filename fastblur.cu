@@ -99,7 +99,7 @@ int main(int argc,char** argv){
     cudaFree(mid); //done with mid
 
      //now back to int8 so we can save it
-     img=malloc(sizeof(uint8_t*)*pWidth*height);
+     img=(uint8_t*)malloc(sizeof(uint8_t)*pWidth*height);
      for (int i=0;i<pWidth*height;i++){
          img[i]=(uint8_t)dest[i];
      }
