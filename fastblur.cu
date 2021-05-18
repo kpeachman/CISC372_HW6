@@ -100,7 +100,7 @@ int main(int argc,char** argv){
 
      //now back to int8 so we can save it
      img=malloc(sizeof(uint8_t)*pWidth*height);
-     for (i=0;i<pWidth*height;i++){
+     for (int i=0;i<pWidth*height;i++){
          img[i]=(uint8_t)dest[i];
      }
      free(dest);   
