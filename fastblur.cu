@@ -34,6 +34,7 @@ __global__ void computeColumn(uint8_t* src,float* dest,int pWidth,int height,int
 void computeRow(float* src,float* dest,int pWidth,int radius,int bpp){
     int i;
     int bradius=radius*bpp;
+    int row = blockIdx.y * blockDim.y + threadIdx.y;
     //initialize the first bpp elements so that nothing fails
     for (i=0;i<bpp;i++)
         dest[row*pWidth+i]=src[row*pWidth+i];
