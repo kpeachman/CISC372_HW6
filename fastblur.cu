@@ -85,16 +85,18 @@ int main(int argc,char** argv){
     cudaMallocManaged(&mid, sizeof(float)*pWidth*height);   
     cudaMallocManaged(&dest, sizeof(float)*pWidth*height);
     
+    int blockSize = 256;
+    int numBlocks = (pWidth+blockSize-1)/blockSize;
     t1=time(NULL);
 
-    computeColumn<<<1,1>>>(img,mid,pWidth,height,radius,bpp);
-  
+    computeColumn<<<numBlocks,blockSize>>>(img,mid,pWidth,height,radius,bpp);
+    cudaDeviceSynchronize();
     stbi_image_free(img); //done with image
 
-    computeRow<<<1,1>>>(mid,dest,pWidth,height,radius,bpp);
-    
+    computeRow<<<numBlocks,blockSize>>>(mid,dest,pWidth,height,radius,bpp);
+    cudaDeviceSynchronize();
     t2=time(NULL);
-    free(mid); //done with mid
+    cudaFree(mid); //done with mid
 
 
 
