@@ -78,8 +78,8 @@ int main(int argc,char** argv){
     pWidth=width*bpp;  //actual width in bytes of an image row
 
     //allocate memory for images
-    cudaMallocManaged(mid, sizeof(float)*pWidth*height);   
-    cudaMallocManaged(dest, sizeof(float)*pWidth*height);
+    cudaMallocManaged(&mid, sizeof(float)*pWidth*height);   
+    cudaMallocManaged(&dest, sizeof(float)*pWidth*height);
     
     t1=time(NULL);
 
