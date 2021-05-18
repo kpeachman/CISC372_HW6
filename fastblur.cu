@@ -12,6 +12,8 @@
 __global__ void computeColumn(uint8_t* src,float* dest,int pWidth,int height,int radius,int bpp){
     int i;
     int col = blockIdx.x * blockDim.x + threadIdx.x;
+    if(col >= pWidth)
+        return;
     //initialize the first element of each column
     dest[col]=src[col];
     //start tue sum up to radius*2 by only adding
@@ -31,10 +33,12 @@ __global__ void computeColumn(uint8_t* src,float* dest,int pWidth,int height,int
 
 }
 
-__global__ void computeRow(float* src,float* dest,int pWidth,int radius,int bpp){
+__global__ void computeRow(float* src,float* dest,int pWidth, int height, int radius,int bpp){
     int i;
     int bradius=radius*bpp;
     int row = blockIdx.y * blockDim.y + threadIdx.y;
+    if(row >= height)
+        return;
     //initialize the first bpp elements so that nothing fails
     for (i=0;i<bpp;i++)
         dest[row*pWidth+i]=src[row*pWidth+i];
@@ -87,7 +91,7 @@ int main(int argc,char** argv){
   
     stbi_image_free(img); //done with image
 
-    computeRow<<<1,1>>>(mid,dest,pWidth,radius,bpp);
+    computeRow<<<1,1>>>(mid,dest,pWidth,height,radius,bpp);
     
     t2=time(NULL);
     free(mid); //done with mid
